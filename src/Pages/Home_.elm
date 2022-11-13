@@ -1,7 +1,7 @@
 module Pages.Home_ exposing (Model, Msg, page)
 
 import Gen.Params.Home_ exposing (Params)
-import Html
+import Html exposing (Html)
 import Page
 import Request
 import Shared
@@ -60,7 +60,12 @@ subscriptions _ =
 
 
 view : Model -> View Msg
-view _ =
+view model =
     { title = "Home"
-    , body = [ Html.text "Let there be light!" ]
+    , body = viewBody model
     }
+
+
+viewBody : Model -> List (Html Msg)
+viewBody _ =
+    [ Html.text "Let there be light!" ]
