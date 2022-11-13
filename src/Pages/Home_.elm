@@ -73,8 +73,8 @@ view model =
 
 
 viewBody : Model -> List (Html Msg)
-viewBody _ =
-    [ displayCue "let there be light", displayButtons ]
+viewBody model =
+    [ displayCue "let there be light", displayButtons model ]
 
 
 displayCue : String -> Html Msg
@@ -122,15 +122,15 @@ buttonMargin =
     4
 
 
-displayButtons : Html Msg
-displayButtons =
+displayButtons : Model -> Html Msg
+displayButtons model =
     let
         buttonsPerRow =
             5
     in
     "abcdefghijklmnopqrstuvwxyz"
         |> String.split ""
-        |> List.map buttonify
+        |> List.map (buttonify model)
         |> Html.div
             [ Attributes.css
                 [ Css.displayFlex
@@ -146,15 +146,21 @@ displayButtons =
             ]
 
 
-buttonify : String -> Html Msg
-buttonify string =
+buttonify : Model -> String -> Html Msg
+buttonify model string =
     Html.button
-        [ Attributes.css
+        ([ Attributes.css
             [ Css.width (Css.px buttonSize)
             , Css.height (Css.px buttonSize)
             , Css.margin (Css.px buttonMargin)
             , Css.padding (Css.px 8)
             ]
-        , Events.onClick <| RecordGuess string
-        ]
+         ]
+            ++ (if Set.member string model.guesses then
+                    [ Attributes.disabled True ]
+
+                else
+                    [ Events.onClick <| RecordGuess string ]
+               )
+        )
         [ Html.text string ]
