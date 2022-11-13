@@ -70,7 +70,7 @@ view model =
 
 viewBody : Model -> List (Html Msg)
 viewBody _ =
-    [ displayCue "let there be light" ]
+    [ displayCue "let there be light", displayButtons ]
 
 
 displayCue : String -> Html Msg
@@ -81,8 +81,9 @@ displayCue secret =
         |> Html.div
             [ Attributes.css
                 [ Css.displayFlex
+                , Css.marginBottom (Css.px 16)
                 , Css.fontFamily Css.monospace
-                , Css.fontSize (Css.em 1.75)
+                , Css.fontSize (Css.px 20)
                 ]
             ]
 
@@ -100,8 +101,55 @@ spanify : String -> Html Msg
 spanify string =
     Html.span
         [ Attributes.css
-            [ Css.margin2 Css.zero (Css.em 0.16)
-            , Css.minWidth (Css.em 0.16)
+            [ Css.margin2 Css.zero (Css.px 4)
+            , Css.minWidth (Css.px 4)
+            ]
+        ]
+        [ Html.text string ]
+
+
+buttonSize : Float
+buttonSize =
+    40
+
+
+buttonMargin : Float
+buttonMargin =
+    4
+
+
+displayButtons : Html Msg
+displayButtons =
+    let
+        buttonsPerRow =
+            5
+    in
+    "abcdefghijklmnopqrstuvwxyz"
+        |> String.split ""
+        |> List.map buttonify
+        |> Html.div
+            [ Attributes.css
+                [ Css.displayFlex
+                , Css.flexWrap Css.wrap
+                , Css.width <|
+                    Css.px
+                        (buttonsPerRow
+                            * (buttonSize + (2 * buttonMargin))
+                        )
+                , Css.fontFamily Css.monospace
+                , Css.fontSize (Css.px 20)
+                ]
+            ]
+
+
+buttonify : String -> Html Msg
+buttonify string =
+    Html.button
+        [ Attributes.css
+            [ Css.width (Css.px buttonSize)
+            , Css.height (Css.px buttonSize)
+            , Css.margin (Css.px buttonMargin)
+            , Css.padding (Css.px 8)
             ]
         ]
         [ Html.text string ]
