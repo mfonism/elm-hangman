@@ -4,8 +4,10 @@ import Css
 import Gen.Params.Home_ exposing (Params)
 import Html.Styled as Html exposing (Html)
 import Html.Styled.Attributes as Attributes
+import Html.Styled.Events as Events
 import Page
 import Request
+import Set exposing (Set)
 import Shared
 import View exposing (View)
 
@@ -25,12 +27,12 @@ page _ _ =
 
 
 type alias Model =
-    {}
+    { guesses : Set String }
 
 
 init : ( Model, Cmd Msg )
 init =
-    ( {}, Cmd.none )
+    ( { guesses = Set.empty }, Cmd.none )
 
 
 
@@ -38,14 +40,16 @@ init =
 
 
 type Msg
-    = NoOp
+    = RecordGuess String
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        NoOp ->
-            ( model, Cmd.none )
+        RecordGuess character ->
+            ( { model | guesses = Set.insert character model.guesses }
+            , Cmd.none
+            )
 
 
 
@@ -151,5 +155,6 @@ buttonify string =
             , Css.margin (Css.px buttonMargin)
             , Css.padding (Css.px 8)
             ]
+        , Events.onClick <| RecordGuess string
         ]
         [ Html.text string ]
