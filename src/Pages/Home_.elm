@@ -1,6 +1,7 @@
 module Pages.Home_ exposing (Model, Msg, page)
 
 import Gen.Params.Home_ exposing (Params)
+import Html
 import Page
 import Request
 import Shared
@@ -8,7 +9,7 @@ import View exposing (View)
 
 
 page : Shared.Model -> Request.With Params -> Page.With Model Msg
-page shared req =
+page _ _ =
     Page.element
         { init = init
         , update = update
@@ -35,13 +36,13 @@ init =
 
 
 type Msg
-    = ReplaceMe
+    = NoOp
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        ReplaceMe ->
+        NoOp ->
             ( model, Cmd.none )
 
 
@@ -50,7 +51,7 @@ update msg model =
 
 
 subscriptions : Model -> Sub Msg
-subscriptions model =
+subscriptions _ =
     Sub.none
 
 
@@ -59,5 +60,7 @@ subscriptions model =
 
 
 view : Model -> View Msg
-view model =
-    View.placeholder "Home_"
+view _ =
+    { title = "Home"
+    , body = [ Html.text "Let there be light!" ]
+    }
