@@ -68,4 +68,26 @@ view model =
 
 viewBody : Model -> List (Html Msg)
 viewBody _ =
-    [ Html.text "Let there be light!" ]
+    [ displayCue "let there be light" ]
+
+
+displayCue : String -> Html Msg
+displayCue secret =
+    secret
+        |> String.toList
+        |> List.map (displayCharacter >> spanify)
+        |> Html.div []
+
+
+displayCharacter : Char -> String
+displayCharacter char =
+    if char == ' ' then
+        " "
+
+    else
+        "_"
+
+
+spanify : String -> Html Msg
+spanify string =
+    Html.span [] [ Html.text string ]
