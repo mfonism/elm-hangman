@@ -74,14 +74,14 @@ view model =
 
 viewBody : Model -> List (Html Msg)
 viewBody model =
-    [ displayCue "let there be light", displayButtons model ]
+    [ displayCue model "let there be light", displayButtons model ]
 
 
-displayCue : String -> Html Msg
-displayCue secret =
+displayCue : Model -> String -> Html Msg
+displayCue model secret =
     secret
-        |> String.toList
-        |> List.map (displayCharacter >> spanify)
+        |> String.split ""
+        |> List.map (displayCharacter model >> spanify)
         |> Html.div
             [ Attributes.css
                 [ Css.displayFlex
@@ -92,10 +92,13 @@ displayCue secret =
             ]
 
 
-displayCharacter : Char -> String
-displayCharacter char =
-    if char == ' ' then
+displayCharacter : Model -> String -> String
+displayCharacter model string =
+    if string == " " then
         " "
+
+    else if Set.member string model.guesses then
+        string
 
     else
         "_"
