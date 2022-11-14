@@ -8,6 +8,7 @@ import Html.Styled.Events as Events
 import Http
 import Json.Decode as Decode exposing (Decoder)
 import Page
+import RemoteData exposing (WebData)
 import Request
 import Set exposing (Set)
 import Shared
@@ -30,7 +31,7 @@ page _ _ =
 
 
 type alias Model =
-    { secret : Maybe String
+    { secret : WebData String
     , secretSet : Set String
     , guesses : Set String
     }
@@ -38,7 +39,7 @@ type alias Model =
 
 init : ( Model, Cmd Msg )
 init =
-    ( { secret = Nothing
+    ( { secret = RemoteData.NotAsked
       , secretSet = Set.empty
       , guesses = Set.empty
       }
@@ -52,7 +53,7 @@ init =
 
 type Msg
     = FetchSecret
-    | GotSecret (Result Http.Error String)
+    | GotSecret (WebData String)
     | RecordGuess String
 
 
@@ -66,27 +67,27 @@ update msg model =
     case msg of
         FetchSecret ->
             let
-                secretFieldDecoder : Decoder String
-                secretFieldDecoder =
+                decodeSecret : Decoder String
+                decodeSecret =
                     Decode.field "word" Decode.string
             in
-            ( model
+            ( { model | secret = RemoteData.Loading }
             , Http.get
                 { url = "https://snapdragon-fox.glitch.me/word"
-                , expect = Http.expectJson GotSecret secretFieldDecoder
+                , expect = Http.expectJson (RemoteData.fromResult >> GotSecret) decodeSecret
                 }
             )
 
-        GotSecret (Ok secret) ->
+        GotSecret ((RemoteData.Success secret) as success) ->
             ( { model
-                | secret = Just secret
+                | secret = success
                 , secretSet = Set.fromList (String.split "" secret)
               }
             , Cmd.none
             )
 
-        GotSecret (Err _) ->
-            ( model, Cmd.none )
+        GotSecret failure ->
+            ( { model | secret = failure }, Cmd.none )
 
         RecordGuess character ->
             ( { model
@@ -124,10 +125,16 @@ viewBody model =
 displayCue : Model -> Html Msg
 displayCue model =
     case model.secret of
-        Nothing ->
-            Html.text ""
+        RemoteData.NotAsked ->
+            Html.text "NotAsked"
 
-        Just secret ->
+        RemoteData.Loading ->
+            Html.text "Loading"
+
+        RemoteData.Failure err ->
+            Html.text "Failure"
+
+        RemoteData.Success secret ->
             secret
                 |> String.split ""
                 |> List.map (displayCharacter model >> spanify)
