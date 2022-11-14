@@ -40,7 +40,7 @@ init =
       , secretSet = Set.empty
       , guesses = Set.empty
       }
-    , Task.succeed (InitializeSecret "this is a secret") |> Task.perform identity
+    , sendMsg (InitializeSecret "this is a secret")
     )
 
 
@@ -51,6 +51,11 @@ init =
 type Msg
     = InitializeSecret String
     | RecordGuess String
+
+
+sendMsg : Msg -> Cmd Msg
+sendMsg msg =
+    Task.succeed msg |> Task.perform identity
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
