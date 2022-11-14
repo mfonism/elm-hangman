@@ -9,6 +9,7 @@ import Page
 import Request
 import Set exposing (Set)
 import Shared
+import Task
 import View exposing (View)
 
 
@@ -27,14 +28,20 @@ page _ _ =
 
 
 type alias Model =
-    { guesses : Set String
-    , secret : String
+    { secret : Maybe String
+    , secretSet : Set String
+    , guesses : Set String
     }
 
 
 init : ( Model, Cmd Msg )
 init =
-    ( { guesses = Set.empty, secret = "hello world" }, Cmd.none )
+    ( { secret = Nothing
+      , secretSet = Set.empty
+      , guesses = Set.empty
+      }
+    , Task.succeed (InitializeSecret "this is a secret") |> Task.perform identity
+    )
 
 
 
@@ -42,14 +49,25 @@ init =
 
 
 type Msg
-    = RecordGuess String
+    = InitializeSecret String
+    | RecordGuess String
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        InitializeSecret secret ->
+            ( { model
+                | secret = Just secret
+                , secretSet = Set.fromList (String.split "" secret)
+              }
+            , Cmd.none
+            )
+
         RecordGuess character ->
-            ( { model | guesses = Set.insert character model.guesses }
+            ( { model
+                | guesses = Set.insert character model.guesses
+              }
             , Cmd.none
             )
 
@@ -81,17 +99,22 @@ viewBody model =
 
 displayCue : Model -> Html Msg
 displayCue model =
-    model.secret
-        |> String.split ""
-        |> List.map (displayCharacter model >> spanify)
-        |> Html.div
-            [ Attributes.css
-                [ Css.displayFlex
-                , Css.marginBottom (Css.px 16)
-                , Css.fontFamily Css.monospace
-                , Css.fontSize (Css.px 20)
-                ]
-            ]
+    case model.secret of
+        Nothing ->
+            Html.text ""
+
+        Just secret ->
+            secret
+                |> String.split ""
+                |> List.map (displayCharacter model >> spanify)
+                |> Html.div
+                    [ Attributes.css
+                        [ Css.displayFlex
+                        , Css.marginBottom (Css.px 16)
+                        , Css.fontFamily Css.monospace
+                        , Css.fontSize (Css.px 20)
+                        ]
+                    ]
 
 
 displayCharacter : Model -> String -> String
@@ -153,31 +176,35 @@ displayButtons model =
 
 buttonify : Model -> String -> Html Msg
 buttonify model string =
-    Html.button
-        ([ Attributes.css
-            [ Css.width (Css.px buttonSize)
-            , Css.height (Css.px buttonSize)
-            , Css.margin (Css.px buttonMargin)
-            , Css.padding (Css.px 8)
-            , Css.borderRadius (Css.px 4)
-            , Css.borderWidth Css.zero
-            ]
-         ]
-            ++ (if Set.member string model.guesses then
-                    if String.contains string model.secret then
-                        [ Attributes.css
-                            [ Css.backgroundColor (Css.rgb 124 185 232)
-                            , Css.borderColor Css.transparent
-                            ]
-                        ]
+    case model.secret of
+        Nothing ->
+            Html.text ""
 
-                    else
-                        [ Attributes.disabled True ]
-
-                else
-                    [ Attributes.css [ Css.cursor Css.pointer ]
-                    , Events.onClick <| RecordGuess string
+        Just secret ->
+            Html.button
+                (Attributes.css
+                    [ Css.width (Css.px buttonSize)
+                    , Css.height (Css.px buttonSize)
+                    , Css.margin (Css.px buttonMargin)
+                    , Css.padding (Css.px 8)
+                    , Css.borderRadius (Css.px 4)
+                    , Css.borderWidth Css.zero
                     ]
-               )
-        )
-        [ Html.text string ]
+                    :: (if Set.member string model.guesses then
+                            if Set.member string model.secretSet then
+                                [ Attributes.css
+                                    [ Css.backgroundColor (Css.rgb 124 185 232)
+                                    , Css.borderColor Css.transparent
+                                    ]
+                                ]
+
+                            else
+                                [ Attributes.disabled True ]
+
+                        else
+                            [ Attributes.css [ Css.cursor Css.pointer ]
+                            , Events.onClick <| RecordGuess string
+                            ]
+                       )
+                )
+                [ Html.text string ]
