@@ -176,35 +176,30 @@ displayButtons model =
 
 buttonify : Model -> String -> Html Msg
 buttonify model string =
-    case model.secret of
-        Nothing ->
-            Html.text ""
-
-        Just secret ->
-            Html.button
-                (Attributes.css
-                    [ Css.width (Css.px buttonSize)
-                    , Css.height (Css.px buttonSize)
-                    , Css.margin (Css.px buttonMargin)
-                    , Css.padding (Css.px 8)
-                    , Css.borderRadius (Css.px 4)
-                    , Css.borderWidth Css.zero
-                    ]
-                    :: (if Set.member string model.guesses then
-                            if Set.member string model.secretSet then
-                                [ Attributes.css
-                                    [ Css.backgroundColor (Css.rgb 124 185 232)
-                                    , Css.borderColor Css.transparent
-                                    ]
-                                ]
-
-                            else
-                                [ Attributes.disabled True ]
-
-                        else
-                            [ Attributes.css [ Css.cursor Css.pointer ]
-                            , Events.onClick <| RecordGuess string
+    Html.button
+        (Attributes.css
+            [ Css.width (Css.px buttonSize)
+            , Css.height (Css.px buttonSize)
+            , Css.margin (Css.px buttonMargin)
+            , Css.padding (Css.px 8)
+            , Css.borderRadius (Css.px 4)
+            , Css.borderWidth Css.zero
+            ]
+            :: (if Set.member string model.guesses then
+                    if Set.member string model.secretSet then
+                        [ Attributes.css
+                            [ Css.backgroundColor (Css.rgb 124 185 232)
+                            , Css.borderColor Css.transparent
                             ]
-                       )
-                )
-                [ Html.text string ]
+                        ]
+
+                    else
+                        [ Attributes.disabled True ]
+
+                else
+                    [ Attributes.css [ Css.cursor Css.pointer ]
+                    , Events.onClick <| RecordGuess string
+                    ]
+               )
+        )
+        [ Html.text string ]
