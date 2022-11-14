@@ -5,6 +5,8 @@ import Gen.Params.Home_ exposing (Params)
 import Html.Styled as Html exposing (Html)
 import Html.Styled.Attributes as Attributes
 import Html.Styled.Events as Events
+import Http
+import Json.Decode as Decode exposing (Decoder)
 import Page
 import Request
 import Set exposing (Set)
@@ -40,7 +42,7 @@ init =
       , secretSet = Set.empty
       , guesses = Set.empty
       }
-    , sendMsg (InitializeSecret "this is a secret")
+    , sendMsg FetchSecret
     )
 
 
@@ -49,7 +51,8 @@ init =
 
 
 type Msg
-    = InitializeSecret String
+    = FetchSecret
+    | GotSecret (Result Http.Error String)
     | RecordGuess String
 
 
@@ -61,13 +64,29 @@ sendMsg msg =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        InitializeSecret secret ->
+        FetchSecret ->
+            let
+                secretFieldDecoder : Decoder String
+                secretFieldDecoder =
+                    Decode.field "word" Decode.string
+            in
+            ( model
+            , Http.get
+                { url = "https://snapdragon-fox.glitch.me/word"
+                , expect = Http.expectJson GotSecret secretFieldDecoder
+                }
+            )
+
+        GotSecret (Ok secret) ->
             ( { model
                 | secret = Just secret
                 , secretSet = Set.fromList (String.split "" secret)
               }
             , Cmd.none
             )
+
+        GotSecret (Err _) ->
+            ( model, Cmd.none )
 
         RecordGuess character ->
             ( { model
