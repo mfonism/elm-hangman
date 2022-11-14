@@ -119,33 +119,33 @@ view model =
 
 viewBody : Model -> List (Html Msg)
 viewBody model =
-    [ displayCue model, displayButtons model ]
-
-
-displayCue : Model -> Html Msg
-displayCue model =
     case model.secret of
         RemoteData.NotAsked ->
-            Html.text "NotAsked"
+            [ Html.text "NotAsked" ]
 
         RemoteData.Loading ->
-            Html.text "Loading"
+            [ Html.text "Loading" ]
 
         RemoteData.Failure err ->
-            Html.text "Failure"
+            [ Html.text "Failure" ]
 
         RemoteData.Success secret ->
-            secret
-                |> String.split ""
-                |> List.map (displayCharacter model >> spanify)
-                |> Html.div
-                    [ Attributes.css
-                        [ Css.displayFlex
-                        , Css.marginBottom (Css.px 16)
-                        , Css.fontFamily Css.monospace
-                        , Css.fontSize (Css.px 20)
-                        ]
-                    ]
+            [ displayCue model secret, displayButtons model ]
+
+
+displayCue : Model -> String -> Html Msg
+displayCue model secret =
+    secret
+        |> String.split ""
+        |> List.map (displayCharacter model >> spanify)
+        |> Html.div
+            [ Attributes.css
+                [ Css.displayFlex
+                , Css.marginBottom (Css.px 16)
+                , Css.fontFamily Css.monospace
+                , Css.fontSize (Css.px 20)
+                ]
+            ]
 
 
 displayCharacter : Model -> String -> String
