@@ -27,12 +27,14 @@ page _ _ =
 
 
 type alias Model =
-    { guesses : Set String }
+    { guesses : Set String
+    , secret : String
+    }
 
 
 init : ( Model, Cmd Msg )
 init =
-    ( { guesses = Set.empty }, Cmd.none )
+    ( { guesses = Set.empty, secret = "hello world" }, Cmd.none )
 
 
 
@@ -74,12 +76,12 @@ view model =
 
 viewBody : Model -> List (Html Msg)
 viewBody model =
-    [ displayCue model "let there be light", displayButtons model ]
+    [ displayCue model, displayButtons model ]
 
 
-displayCue : Model -> String -> Html Msg
-displayCue model secret =
-    secret
+displayCue : Model -> Html Msg
+displayCue model =
+    model.secret
         |> String.split ""
         |> List.map (displayCharacter model >> spanify)
         |> Html.div
@@ -157,13 +159,25 @@ buttonify model string =
             , Css.height (Css.px buttonSize)
             , Css.margin (Css.px buttonMargin)
             , Css.padding (Css.px 8)
+            , Css.borderRadius (Css.px 4)
+            , Css.borderWidth Css.zero
             ]
          ]
             ++ (if Set.member string model.guesses then
-                    [ Attributes.disabled True ]
+                    if String.contains string model.secret then
+                        [ Attributes.css
+                            [ Css.backgroundColor (Css.rgb 124 185 232)
+                            , Css.borderColor Css.transparent
+                            ]
+                        ]
+
+                    else
+                        [ Attributes.disabled True ]
 
                 else
-                    [ Events.onClick <| RecordGuess string ]
+                    [ Attributes.css [ Css.cursor Css.pointer ]
+                    , Events.onClick <| RecordGuess string
+                    ]
                )
         )
         [ Html.text string ]
