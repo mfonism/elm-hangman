@@ -148,27 +148,50 @@ displayCue model secret =
             ]
 
 
-displayCharacter : Model -> String -> String
+type ScreenChar
+    = Space
+    | Letter (Maybe String)
+
+
+displayCharacter : Model -> String -> ScreenChar
 displayCharacter model string =
     if string == " " then
-        " "
+        Space
 
     else if Set.member string model.guesses then
-        string
+        Letter (Just string)
 
     else
-        "_"
+        Letter Nothing
 
 
-spanify : String -> Html Msg
-spanify string =
-    Html.span
-        [ Attributes.css
-            [ Css.margin2 Css.zero (Css.px 4)
-            , Css.minWidth (Css.px 4)
-            ]
-        ]
-        [ Html.text string ]
+charBoxSize : Float
+charBoxSize =
+    24
+
+
+spanify : ScreenChar -> Html Msg
+spanify screenChar =
+    case screenChar of
+        Space ->
+            Html.span
+                [ Attributes.css [ Css.width (Css.px (charBoxSize * 5 / 8)) ] ]
+                [ Html.text "" ]
+
+        Letter maybeString ->
+            Html.span
+                [ Attributes.css
+                    [ Css.marginLeft (Css.px 2)
+                    , Css.marginRight (Css.px 2)
+                    , Css.width (Css.px charBoxSize)
+                    , Css.height (Css.px charBoxSize)
+                    , Css.lineHeight (Css.px charBoxSize)
+                    , Css.textAlign Css.center
+                    , Css.border3 (Css.px 1) Css.solid (Css.rgb 0 0 0)
+                    , Css.borderRadius (Css.px 2)
+                    ]
+                ]
+                [ Html.text <| Maybe.withDefault "" maybeString ]
 
 
 buttonSize : Float
